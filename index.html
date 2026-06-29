@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthday Love Page</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Lora:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --blush: #f9c8d4;
+      --cream: #fff8f0;
+      --rose: #c8647a;
+      --text-dark: #5a2d3a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Lora", serif;
+      background: linear-gradient(145deg, var(--cream), #ffeef5);
+      color: var(--text-dark);
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .petal-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .petal {
+      position: absolute;
+      top: -5vh;
+      width: 14px;
+      height: 18px;
+      border-radius: 50% 0 50% 0;
+      opacity: 0;
+      animation: petal-float linear infinite;
+    }
+
+    @keyframes petal-float {
+      0% {
+        transform: translateY(0) rotate(0deg) translateX(0);
+        opacity: 0;
+      }
+
+      8% {
+        opacity: 0.75;
+      }
+
+      92% {
+        opacity: 0.55;
+      }
+
+      100% {
+        transform: translateY(110vh) rotate(720deg) translateX(var(--drift, 40px));
+        opacity: 0;
+      }
+    }
+
+    .main-page {
+      position: fixed;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      z-index: 10;
+      opacity: 0;
+      background: linear-gradient(160deg, #fde8ee 0%, #fdf0f8 45%, #fff5e6 100%);
+      transition: opacity 0.9s ease;
+      overflow: visible;
+    }
+
+    .main-page.show {
+      opacity: 1;
+    }
+
+    .birthday-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      transition: opacity 0.8s ease;
+    }
+
+    .birthday-content.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .birthday-greeting {
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(2.2rem, 5vw, 3rem);
+      font-weight: 600;
+      color: var(--rose);
+      margin: 0;
+      opacity: 0;
+    }
+
+    .birthday-name {
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(3.5rem, 12vw, 6rem);
+      font-weight: 700;
+      color: #5a2d3a;
+      margin: 0 0 2rem;
+      opacity: 0;
+      transform: translateY(80px);
+    }
+
+    .main-page.revealed .birthday-greeting {
+      animation: greeting-fade-in 1.1s ease forwards;
+      animation-delay: 0.35s;
+    }
+
+    .main-page.revealed .birthday-name {
+      animation: name-sweep-up 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      animation-delay: 1.15s;
+    }
+
+    @keyframes greeting-fade-in {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes name-sweep-up {
+      from {
+        opacity: 0;
+        transform: translateY(80px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .envelope-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+      overflow: visible;
+      padding-top: 4rem;
+    }
+
+    .envelope-svg {
+      width: min(72vw, 200px);
+      height: auto;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(80px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      outline: none;
+      overflow: visible;
+    }
+
+    .envelope-svg:focus-visible {
+      outline: 2px solid var(--rose);
+      outline-offset: 6px;
+    }
+
+    .envelope-svg.visible {
+      opacity: 1;
+      transform: translateY(0);
+      animation: envelope-glow 2.8s ease-in-out infinite;
+    }
+
+    .envelope-svg.is-open {
+      animation: none;
+      filter: drop-shadow(0 0 8px rgba(200, 100, 122, 0.35));
+    }
+
+    .envelope-flap-group {
+      transform-box: fill-box;
+      transform-origin: center top;
+      transform: scaleY(1);
+      transition: transform 0.5s ease 0.4s;
+    }
+
+    .envelope-svg.is-open .envelope-flap-group {
+      transform: scaleY(-1);
+      transition: transform 0.5s ease;
+    }
+
+    .envelope-paper-peek {
+      transform-box: fill-box;
+      transform-origin: center bottom;
+      transform: scaleY(0);
+      transition: transform 0.4s ease;
+    }
+
+    .envelope-svg.is-open .envelope-paper-peek {
+      transform: scaleY(1);
+      transition: transform 0.4s ease 0.3s;
+    }
+
+    .envelope-svg.instant .envelope-flap-group,
+    .envelope-svg.instant .envelope-paper-peek {
+      transition: none;
+    }
+
+    .continue-btn {
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(1.35rem, 3vw, 1.7rem);
+      font-weight: 600;
+      color: var(--rose);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+
+    .continue-btn.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .continue-btn:focus-visible {
+      outline: 2px solid var(--rose);
+      outline-offset: 4px;
+      border-radius: 6px;
+    }
+
+    .outro-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+
+    .outro-content.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .outro-message {
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 600;
+      color: var(--rose);
+      margin: 0;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+
+    .outro-content.show .outro-message {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.4s;
+    }
+
+    .outro-back-btn {
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--rose);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+
+    .outro-content.show .outro-back-btn {
+      opacity: 0.75;
+      transform: translateY(0);
+      transition-delay: 1.2s;
+    }
+
+    .outro-back-btn:hover {
+      opacity: 1;
+    }
+
+    .outro-back-btn:focus-visible {
+      outline: 2px solid var(--rose);
+      outline-offset: 4px;
+      border-radius: 6px;
+    }
+
+    .letter-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: rgba(253, 232, 238, 0.62);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .letter-overlay.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .letter-overlay.instant {
+      transition: none;
+    }
+
+    .letter-card {
+      width: min(92vw, 520px);
+      max-height: min(80vh, 640px);
+      overflow-y: auto;
+      padding: clamp(1.6rem, 4vw, 2.4rem) clamp(1.5rem, 4vw, 2.2rem);
+      background-color: #fdf6ec;
+      background-image: repeating-linear-gradient(to bottom,
+          transparent,
+          transparent 27px,
+          rgba(200, 100, 122, 0.09) 27px,
+          rgba(200, 100, 122, 0.09) 28px);
+      border-radius: 4px;
+      box-shadow: 0 22px 55px rgba(90, 45, 58, 0.22);
+      text-align: left;
+      transform: scale(0.14) translateY(140px);
+      opacity: 0;
+      transition:
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.45s ease;
+      pointer-events: auto;
+    }
+
+    .letter-card.instant {
+      transition: none;
+    }
+
+    .letter-overlay.active .letter-card.expanded {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .letter-date {
+      margin: 0 0 1.4rem;
+      text-align: right;
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: rgba(90, 45, 58, 0.72);
+    }
+
+    .letter-salutation {
+      margin: 0 0 1.1rem;
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(1.65rem, 4vw, 2.25rem);
+      font-weight: 600;
+      color: var(--rose);
+    }
+
+    .letter-body {
+      margin: 0;
+      min-height: 2.8em;
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: clamp(1rem, 2.2vw, 1.12rem);
+      line-height: 1.85;
+      color: var(--text-dark);
+    }
+
+    .letter-signoff {
+      margin: 2rem 0 0;
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: clamp(1rem, 2.2vw, 1.12rem);
+      color: var(--text-dark);
+      opacity: 0;
+      transition: opacity 0.85s ease;
+    }
+
+    .letter-signoff.visible {
+      opacity: 1;
+    }
+
+    @keyframes envelope-glow {
+
+      0%,
+      100% {
+        filter: drop-shadow(0 0 8px rgba(200, 100, 122, 0.35));
+      }
+
+      50% {
+        filter: drop-shadow(0 0 20px rgba(249, 200, 212, 0.9));
+      }
+    }
+
+    .vinyl-player {
+      position: fixed;
+      right: 1.25rem;
+      bottom: 1.25rem;
+      z-index: 60;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    .vinyl-player.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .vinyl-player:focus-visible {
+      outline: 2px solid var(--rose);
+      outline-offset: 4px;
+      border-radius: 50%;
+    }
+
+    .vinyl-icon {
+      width: 40px;
+      height: 40px;
+      display: block;
+      transition: transform 0.2s ease;
+    }
+
+    .vinyl-player.playing .vinyl-icon {
+      animation: vinyl-spin 3.2s linear infinite;
+    }
+
+    @keyframes vinyl-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .vinyl-tooltip {
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 10px);
+      min-width: 140px;
+      max-width: 220px;
+      padding: 0.5rem 0.75rem;
+      border-radius: 12px;
+      background: rgba(253, 230, 240, 0.96);
+      border: 1px solid rgba(200, 100, 122, 0.22);
+      box-shadow: 0 8px 22px rgba(90, 45, 58, 0.12);
+      line-height: 1.4;
+      color: var(--text-dark);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .vinyl-tooltip-title {
+      display: block;
+      font-family: "Dancing Script", cursive;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--rose);
+    }
+
+    .vinyl-tooltip-artist {
+      display: block;
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: 0.75rem;
+      color: var(--text-dark);
+      opacity: 0.72;
+    }
+
+    .vinyl-tooltip::after {
+      content: "";
+      position: absolute;
+      right: 14px;
+      top: 100%;
+      border: 6px solid transparent;
+      border-top-color: rgba(253, 230, 240, 0.96);
+    }
+
+    .vinyl-player:hover .vinyl-tooltip,
+    .vinyl-player:focus-visible .vinyl-tooltip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .lock-screen {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--cream);
+      z-index: 50;
+      opacity: 1;
+      transition: opacity 0.8s ease;
+      overflow: hidden;
+    }
+
+    .lock-screen.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .left-pane,
+    .right-pane {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(1.25rem, 3vw, 3rem);
+    }
+
+    .left-pane {
+      background: linear-gradient(180deg, rgba(249, 200, 212, 1) 0%, rgba(247, 217, 228, 1) 100%);
+      background-color: rgba(255, 255, 255, 1);
+    }
+
+    .right-pane {
+      background-color: rgba(255, 240, 253, 1);
+    }
+
+    .cat-gif {
+      width: min(75%, 340px);
+      max-width: 100%;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: 0 16px 35px rgba(90, 45, 58, 0.18);
+      background-color: rgba(255, 235, 250, 1);
+      padding: 0.5rem;
+    }
+
+    .panel {
+      width: min(90%, 390px);
+      background: rgba(248, 211, 220, 0.95);
+      border: 2px solid rgba(200, 100, 122, 0.25);
+      border-radius: 24px;
+      padding: 1.2rem 1.3rem 1.5rem;
+      box-shadow: 0px 4px 30px 0px rgba(0, 0, 0, 0.15);
+      font-family: Georgia, serif;
+    }
+
+    .title {
+      font-family: Georgia, serif;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+      text-align: center;
+      color: var(--rose);
+      margin: 0.2rem 0 1rem;
+      background-color: unset;
+      background: unset;
+      border-color: rgba(0, 0, 0, 0);
+      border-image: none;
+    }
+
+    .pin-display {
+      background: #fff;
+      border: 2px dashed rgba(200, 100, 122, 0.5);
+      border-radius: 14px;
+      padding: 0.7rem 1rem;
+      text-align: center;
+      letter-spacing: 0.55rem;
+      font-size: clamp(1.5rem, 3vw, 1.9rem);
+      color: var(--text-dark);
+      margin-bottom: 0.95rem;
+      user-select: none;
+      min-height: 3.6rem;
+      display: grid;
+      place-items: center;
+    }
+
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.65rem;
+    }
+
+    .key {
+      border: none;
+      border-radius: 12px;
+      background: #ffeaf1;
+      color: var(--text-dark);
+      font-family: "Lora", serif;
+      font-size: 1.1rem;
+      padding: 0.78rem 0.45rem;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 6px 14px rgba(90, 45, 58, 0.1);
+      touch-action: manipulation;
+    }
+
+    .key:hover {
+      background: #ffdce8;
+      transform: translateY(-1px);
+    }
+
+    .key:active {
+      transform: translateY(1px);
+    }
+
+    .key.action {
+      background: #f7c4d4;
+      font-weight: 600;
+    }
+
+    .feedback {
+      text-align: center;
+      font-size: 0.98rem;
+      color: var(--rose);
+      margin-top: 0.85rem;
+      min-height: 1.2rem;
+      opacity: 0;
+      transition: opacity 0.45s ease;
+    }
+
+    .feedback.show {
+      opacity: 1;
+    }
+
+    .feedback.success {
+      color: #a84f68;
+    }
+
+    .panel.shake {
+      animation: shake-horizontal 0.44s ease;
+    }
+
+    @keyframes shake-horizontal {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-9px);
+      }
+
+      40% {
+        transform: translateX(9px);
+      }
+
+      60% {
+        transform: translateX(-7px);
+      }
+
+      80% {
+        transform: translateX(7px);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .lock-screen {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      .left-pane {
+        min-height: 38vh;
+      }
+
+      body.unlocked {
+        overflow: auto;
+      }
+    }
+
+    .quiz-screen {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      opacity: 0;
+      padding: 1.5rem;
+      background: linear-gradient(160deg, #fde8ee 0%, #fdf0f8 45%, #fff5e6 100%);
+      transition: opacity 0.9s ease;
+      overflow: hidden;
+    }
+
+    .quiz-screen.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .quiz-window {
+      position: relative;
+      z-index: 2;
+      width: min(90vw, 400px);
+      border: 2px solid rgba(200, 100, 122, 0.4);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 18px 45px rgba(200, 100, 122, 0.28);
+      background: var(--cream);
+    }
+
+    .quiz-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0.65rem;
+      background: #c8647a;
+      color: #fff;
+    }
+
+    .quiz-title {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.15);
+    }
+
+    .quiz-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .quiz-ctrl {
+      width: 15px;
+      height: 15px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.22);
+      color: #fff;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.5rem;
+      line-height: 1;
+      cursor: default;
+      display: grid;
+      place-items: center;
+    }
+
+    .quiz-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      padding: 0.35rem 0.5rem;
+      background: #d4788a;
+      color: #fff5f8;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+    }
+
+    .quiz-body {
+      position: relative;
+      overflow: visible;
+      min-height: 320px;
+      padding: 1.5rem;
+      background-color: #fde8ee;
+      background-image:
+        repeating-linear-gradient(45deg, rgba(200, 100, 122, 0.08) 0px, rgba(200, 100, 122, 0.08) 1px, transparent 1px, transparent 50%),
+        repeating-linear-gradient(-45deg, rgba(200, 100, 122, 0.08) 0px, rgba(200, 100, 122, 0.08) 1px, transparent 1px, transparent 50%);
+      background-size: 20px 20px;
+      border-radius: 0 0 10px 10px;
+    }
+
+    .quiz-content-viewport {
+      overflow: hidden;
+    }
+
+    .quiz-content-panel {
+      transition: transform 0.35s ease, opacity 0.35s ease;
+    }
+
+    .quiz-content-panel.slide-active {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .quiz-content-panel.slide-out-left {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+
+    .quiz-content-panel.slide-in-right {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    .quiz-window.shake {
+      animation: shake-horizontal 0.44s ease;
+    }
+
+    .quiz-progress {
+      margin: 0 0 0.85rem;
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: 0.82rem;
+      color: rgba(90, 45, 58, 0.65);
+      text-align: center;
+    }
+
+    .quiz-gif {
+      display: block;
+      width: 120px;
+      height: auto;
+      margin: 0 auto 1rem;
+      border-radius: 12px;
+    }
+
+    .quiz-question {
+      margin: 0 0 1.15rem;
+      font-family: "Dancing Script", cursive;
+      font-size: clamp(1.55rem, 4.5vw, 2rem);
+      font-weight: 700;
+      color: var(--rose);
+      text-align: center;
+      line-height: 1.25;
+    }
+
+    .quiz-question.q1 {
+      font-size: 1.6rem;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .quiz-options-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.65rem;
+    }
+
+    .quiz-answer {
+      border: none;
+      border-radius: 12px;
+      background: #ffeaf1;
+      color: var(--rose);
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      padding: 0.78rem 0.45rem;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 6px 14px rgba(90, 45, 58, 0.1);
+      touch-action: manipulation;
+    }
+
+    .quiz-answer:hover {
+      background: #ffdce8;
+      transform: translateY(-1px);
+    }
+
+    .quiz-answer:active {
+      transform: translateY(1px);
+    }
+
+    .quiz-answer.flash-wrong {
+      animation: quiz-flash-red 0.45s ease;
+    }
+
+    .quiz-answer.flash-correct {
+      animation: quiz-flash-green 0.45s ease;
+    }
+
+    @keyframes quiz-flash-red {
+
+      0%,
+      100% {
+        background: #ffeaf1;
+      }
+
+      50% {
+        background: #ffb8b8;
+      }
+    }
+
+    @keyframes quiz-flash-green {
+
+      0%,
+      100% {
+        background: #ffeaf1;
+      }
+
+      50% {
+        background: #b8f0c8;
+      }
+    }
+
+    .quiz-option {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid rgba(200, 100, 122, 0.35);
+      border-radius: 8px;
+      background: rgba(255, 248, 252, 0.88);
+      color: var(--text-dark);
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.12s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 10px rgba(90, 45, 58, 0.06);
+    }
+
+    .quiz-option:hover {
+      background: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(90, 45, 58, 0.1);
+    }
+
+    .quiz-option:active {
+      transform: translateY(0);
+    }
+
+    .quiz-complete-msg {
+      margin: 0 0 1rem;
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text-dark);
+      text-align: center;
+    }
+
+    #q3ButtonArea {
+      position: relative;
+      width: 100%;
+      height: 140px;
+      margin-top: 1rem;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .q3-yes-btn,
+    .q3-no-btn {
+      border: none;
+      border-radius: 12px;
+      background: #ffeaf1;
+      color: var(--rose);
+      font-family: "Lora", serif;
+      font-weight: 600;
+      padding: 0.78rem 1.8rem;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(90, 45, 58, 0.1);
+      touch-action: manipulation;
+    }
+
+    .q3-yes-btn {
+      font-size: 1.1rem;
+      transition: font-size 0.3s ease;
+    }
+
+    .q3-yes-btn:hover {
+      background: #ffdce8;
+    }
+
+    .q3-yes-btn:active {
+      background: #ffd0e0;
+    }
+
+    .q3-no-btn {
+      font-size: 1rem;
+      transition: left 0.15s ease, top 0.15s ease;
+    }
+
+    .q3-celebration {
+      text-align: center;
+      animation: q3-fade-in 0.5s ease forwards;
+    }
+
+    .q3-celebration-title {
+      font-family: "Dancing Script", cursive;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--rose);
+      margin: 0.8rem 0 0.5rem;
+    }
+
+    .q3-celebration-sub {
+      font-family: "Lora", serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text-dark);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    @keyframes q3-fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .confetti-heart {
+      position: fixed;
+      font-size: 1.4rem;
+      pointer-events: none;
+      z-index: 200;
+      animation: confetti-burst 1.5s ease-out forwards;
+    }
+
+    @keyframes confetti-burst {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1) rotate(0deg);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(var(--cx), var(--cy)) scale(0.4) rotate(var(--cr));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="lockScreen" class="lock-screen" aria-label="Lock screen">
+    <div class="petal-layer" id="lockPetals" aria-hidden="true"></div>
+
+    <section class="left-pane">
+      <img class="cat-gif" src="https://media.tenor.com/A5VhCveZ_ygAAAAi/peach-and-goma-peach-goma.gif"
+        alt="Peach and Goma cats cuddling">
+    </section>
+
+    <section class="right-pane">
+      <div id="pinPanel" class="panel">
+        <h2 class="title">Enter the secret key</h2>
+        <div id="pinDisplay" class="pin-display" aria-live="polite">_ _ _ _</div>
+
+        <div class="numpad" aria-label="Numpad">
+          <button class="key" data-key="1">1</button>
+          <button class="key" data-key="2">2</button>
+          <button class="key" data-key="3">3</button>
+          <button class="key" data-key="4">4</button>
+          <button class="key" data-key="5">5</button>
+          <button class="key" data-key="6">6</button>
+          <button class="key" data-key="7">7</button>
+          <button class="key" data-key="8">8</button>
+          <button class="key" data-key="9">9</button>
+          <button class="key action" data-action="backspace">⌫</button>
+          <button class="key" data-key="0">0</button>
+          <button class="key action" data-action="confirm">✓</button>
+        </div>
+
+        <p id="feedback" class="feedback" aria-live="polite"></p>
+      </div>
+    </section>
+  </div>
+
+  <div id="quizScreen" class="quiz-screen" aria-hidden="true">
+    <div class="petal-layer" id="quizPetals" aria-hidden="true"></div>
+
+    <div class="quiz-window" id="quizWindow" role="dialog" aria-labelledby="quizQuestion" aria-modal="true">
+      <div class="quiz-titlebar">
+        <span class="quiz-title">LOVE</span>
+        <div class="quiz-controls">
+          <button type="button" class="quiz-ctrl" tabindex="-1" aria-hidden="true">_</button>
+          <button type="button" class="quiz-ctrl" tabindex="-1" aria-hidden="true">□</button>
+          <button type="button" class="quiz-ctrl" tabindex="-1" aria-hidden="true">✕</button>
+        </div>
+      </div>
+      <div class="quiz-toolbar" aria-hidden="true">♥ ♥ ♥</div>
+      <div class="quiz-body">
+        <div class="quiz-content-viewport">
+          <div class="quiz-content-panel slide-active" id="quizContentPanel"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main id="mainPage" class="main-page" aria-hidden="true">
+    <div class="petal-layer" id="mainPetals" aria-hidden="true"></div>
+
+    <div class="birthday-content">
+      <h1 class="birthday-greeting">Happy Birthday,</h1>
+      <h2 class="birthday-name">Nitya</h2>
+
+      <div class="envelope-area">
+        <svg class="envelope-svg" id="envelopeSvg" viewBox="0 0 200 150" width="200" height="150" role="button"
+          tabindex="0" aria-label="Open letter">
+          <rect class="envelope-paper-peek" x="50" y="2" width="100" height="40" rx="2" fill="#fdf6ec" stroke="#e0b8c4"
+            stroke-width="1" />
+          <rect x="10" y="40" width="180" height="110" rx="6" fill="#fff5f8" stroke="#c8647a" stroke-width="2" />
+
+          <g class="envelope-flap-group">
+            <polygon points="10,40 190,40 100,100" fill="#fde8ee" stroke="#c8647a" stroke-width="2"
+              stroke-linejoin="round" />
+            <circle cx="100" cy="95" r="5" fill="#f9c8d4" stroke="#c8647a" stroke-width="1.2" />
+          </g>
+        </svg>
+        <button type="button" class="continue-btn" id="continueBtn" hidden>Continue →</button>
+      </div>
+    </div>
+
+    <div class="letter-overlay" id="letterOverlay" aria-hidden="true">
+      <article class="letter-card" id="letterCard">
+        <p class="letter-date">July 11, 2026</p>
+        <p class="letter-salutation">My dearest Nitya,</p>
+        <p class="letter-body" id="letterBody"></p>
+        <p class="letter-signoff" id="letterSignoff">Forever yours, Woesel 🌸</p>
+      </article>
+    </div>
+
+    <div class="outro-content" id="outroContent">
+      <div class="petal-layer" id="outroPetals" aria-hidden="true"></div>
+      <p class="outro-message">To more birthdays together 🌸</p>
+      <button type="button" class="outro-back-btn" id="goBackBtn">← Go back</button>
+    </div>
+  </main>
+
+  <button id="vinylPlayer" class="vinyl-player" type="button" aria-label="Toggle birthday music">
+    <span class="vinyl-tooltip" id="vinylTooltip"></span>
+    <svg class="vinyl-icon" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="19" fill="#2a2226" stroke="#1a1418" stroke-width="1" />
+      <circle cx="20" cy="20" r="15" fill="none" stroke="#4a3a42" stroke-width="0.7" />
+      <circle cx="20" cy="20" r="11" fill="none" stroke="#5a4650" stroke-width="0.6" />
+      <circle cx="20" cy="20" r="7" fill="none" stroke="#6a5660" stroke-width="0.5" />
+      <circle cx="20" cy="20" r="3.5" fill="#c8647a" />
+      <circle cx="20" cy="20" r="1.2" fill="#fde8ee" />
+    </svg>
+  </button>
+
+  <audio id="bgMusic" loop preload="metadata"></audio>
+
+  <script>
+    const CORRECT_PIN = "0305";
+    const MAX_LENGTH = 4;
+    const BIRTHDAY_MUSIC = {
+      src: "audio/Describe what she was like.mp3",
+      title: "A Song for You",
+      artist: "For Nitya"
+    };
+
+    const PETAL_COLORS = ["#f9c8d4", "#f5b8c8", "#e8a0b0", "#ffdce8", "#f7c4d4"];
+    const PETAL_COUNT = 40;
+    const LETTER_BODY = "I really like you, my baby.";
+    const TYPEWRITER_MS = 55;
+    const QUIZ_Q1 = {
+      gif: "https://media.tenor.com/ieGsbU8n9J4AAAAj/peach-goma-peach-and-goma.gif",
+      question: "When did we become us? 🌸",
+      options: ["April 9th", "April 17th", "May 3rd", "May 16th"],
+      correct: "May 3rd"
+    };
+    const QUIZ_Q2 = {
+      gif: "https://media.tenor.com/MapB0PgXvaMAAAAi/mochi-cat-smooch.gif",
+      question: "What did the hidden slip say in the first letter?\ud83d\udc8c",
+      options: [
+        "May I call you my girl?",
+        "May I have the permission to hold your hand?",
+        "May I run away with you to paradise?",
+        "May I use the toilet please?"
+      ],
+      correct: "May I have the permission to hold your hand?"
+    };
+    let currentQ3Gif = "https://media.tenor.com/a_El-RgSW9QAAAAi/cat-love.gif";
+    const QUIZ_Q3_CELEBRATION_GIF = "https://media.tenor.com/Htgn4ouny1MAAAAi/kitty.gif";
+    const QUIZ_TOTAL = 3;
+
+    const lockScreen = document.getElementById("lockScreen");
+    const quizScreen = document.getElementById("quizScreen");
+    const quizWindow = document.getElementById("quizWindow");
+    const quizContentPanel = document.getElementById("quizContentPanel");
+    const mainPage = document.getElementById("mainPage");
+    const pinPanel = document.getElementById("pinPanel");
+    const pinDisplay = document.getElementById("pinDisplay");
+    const feedback = document.getElementById("feedback");
+    const keys = document.querySelectorAll(".key");
+    const vinylPlayer = document.getElementById("vinylPlayer");
+    const vinylTooltip = document.getElementById("vinylTooltip");
+    const bgMusic = document.getElementById("bgMusic");
+    const envelopeSvg = document.getElementById("envelopeSvg");
+    const continueBtn = document.getElementById("continueBtn");
+    const letterOverlay = document.getElementById("letterOverlay");
+    const letterCard = document.getElementById("letterCard");
+    const letterBody = document.getElementById("letterBody");
+    const letterSignoff = document.getElementById("letterSignoff");
+    const outroContent = document.getElementById("outroContent");
+    const goBackBtn = document.getElementById("goBackBtn");
+    const birthdayContent = document.querySelector(".birthday-content");
+    const mainPetals = document.getElementById("mainPetals");
+    const outroPetals = document.getElementById("outroPetals");
+
+    let pin = "";
+    let unlocked = false;
+    let letterReadOnce = false;
+    let letterIsOpen = false;
+    let typewriterTimer = null;
+    let quizIndex = 0;
+    let quizPetalsCreated = false;
+    let quizAnswerLocked = false;
+    let q1ShuffledOptions = [];
+    let q2ShuffledOptions = [];
+    let q3YesFontSize = 1;
+    let q3NoBtn = null;
+
+    function shuffleArray(items) {
+      const shuffled = [...items];
+      for (let i = shuffled.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    q1ShuffledOptions = shuffleArray(QUIZ_Q1.options);
+    q2ShuffledOptions = shuffleArray(QUIZ_Q2.options);
+
+    function resetQuizContentPanel() {
+      quizContentPanel.className = "quiz-content-panel slide-active";
+    }
+
+    function transitionQuizContent(renderNext, onComplete) {
+      quizContentPanel.classList.remove("slide-active", "slide-in-right");
+      quizContentPanel.classList.add("slide-out-left");
+
+      setTimeout(() => {
+        renderNext();
+        quizContentPanel.classList.remove("slide-out-left");
+        quizContentPanel.classList.add("slide-in-right");
+        void quizContentPanel.offsetWidth;
+        quizContentPanel.classList.remove("slide-in-right");
+        quizContentPanel.classList.add("slide-active");
+        if (onComplete) onComplete();
+      }, 350);
+    }
+
+    function renderQuestion1() {
+      quizContentPanel.innerHTML =
+        `<p class="quiz-progress">Question 1 of ${QUIZ_TOTAL}</p>` +
+        `<img class="quiz-gif" src="${QUIZ_Q1.gif}" alt="Peach and Goma" width="120">` +
+        `<h2 class="quiz-question q1" id="quizQuestion">${QUIZ_Q1.question}</h2>` +
+        `<div class="quiz-options-grid" id="quizOptions"></div>`;
+
+      const optionsContainer = quizContentPanel.querySelector("#quizOptions");
+
+      q1ShuffledOptions.forEach((optionText) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quiz-answer";
+        button.textContent = optionText;
+        button.addEventListener("click", () => handleQ1Answer(button, optionText));
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    function handleQ1Answer(button, answer) {
+      if (quizAnswerLocked) return;
+
+      if (answer === QUIZ_Q1.correct) {
+        quizAnswerLocked = true;
+        button.classList.add("flash-correct");
+
+        setTimeout(() => {
+          transitionQuizContent(
+            () => renderQuestion2(),
+            () => { quizAnswerLocked = false; }
+          );
+        }, 400);
+        return;
+      }
+
+      button.classList.add("flash-wrong");
+      quizWindow.classList.remove("shake");
+      void quizWindow.offsetWidth;
+      quizWindow.classList.add("shake");
+
+      setTimeout(() => button.classList.remove("flash-wrong"), 450);
+      setTimeout(() => quizWindow.classList.remove("shake"), 460);
+    }
+
+    function renderQuestion2() {
+      quizContentPanel.innerHTML =
+        `<p class="quiz-progress">Question 2 of ${QUIZ_TOTAL}</p>` +
+        `<img class="quiz-gif" src="${QUIZ_Q2.gif}" alt="Peach and Goma" width="120" style="border-radius:12px">` +
+        `<h2 class="quiz-question q1" id="quizQuestion">${QUIZ_Q2.question}</h2>` +
+        `<div class="quiz-options" id="quizOptions"></div>`;
+
+      const optionsContainer = quizContentPanel.querySelector("#quizOptions");
+
+      q2ShuffledOptions.forEach((optionText) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quiz-answer";
+        button.textContent = optionText;
+        button.style.width = "100%";
+        button.addEventListener("click", () => handleQ2Answer(button, optionText));
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    function handleQ2Answer(button, answer) {
+      if (quizAnswerLocked) return;
+
+      if (answer === QUIZ_Q2.correct) {
+        quizAnswerLocked = true;
+        button.classList.add("flash-correct");
+
+        setTimeout(() => {
+          transitionQuizContent(
+            () => renderQuestion3(),
+            () => { quizAnswerLocked = false; }
+          );
+        }, 400);
+        return;
+      }
+
+      button.classList.add("flash-wrong");
+      quizWindow.classList.remove("shake");
+      void quizWindow.offsetWidth;
+      quizWindow.classList.add("shake");
+
+      setTimeout(() => button.classList.remove("flash-wrong"), 450);
+      setTimeout(() => quizWindow.classList.remove("shake"), 460);
+    }
+
+    function renderQuestion3() {
+      q3YesFontSize = 1.1;
+      currentQ3Gif = "https://media.tenor.com/a_El-RgSW9QAAAAi/cat-love.gif";
+      let q3FirstHover = true;
+
+      quizContentPanel.innerHTML =
+        `<p class="quiz-progress">Question 3 of ${QUIZ_TOTAL}</p>` +
+        `<img class="quiz-gif" id="q3Gif" src="${currentQ3Gif}" alt="Peach and Goma" width="120" style="border-radius:12px">` +
+        `<h2 class="quiz-question" id="quizQuestion" style="font-size:1.8rem">Do you like me? \ud83e\udd7a</h2>` +
+        `<div id="q3ButtonArea">` +
+          `<button type="button" class="q3-yes-btn" id="q3YesBtn">YES</button>` +
+          `<button type="button" class="q3-no-btn" id="q3NoBtn">NO</button>` +
+        `</div>` +
+        `<div id="q3CelebrationArea"></div>`;
+
+      const yesBtn = document.getElementById("q3YesBtn");
+      q3NoBtn = document.getElementById("q3NoBtn");
+      const area = document.getElementById("q3ButtonArea");
+
+      function rectsOverlap(r1, r2, buffer) {
+        return !(
+          r1.right + buffer < r2.left ||
+          r2.right + buffer < r1.left ||
+          r1.bottom + buffer < r2.top ||
+          r2.bottom + buffer < r1.top
+        );
+      }
+
+      function teleportNo() {
+        if (q3FirstHover) {
+          q3FirstHover = false;
+          area.style.display = "block";
+          yesBtn.style.position = "absolute";
+          yesBtn.style.left = "50%";
+          yesBtn.style.bottom = "16px";
+          yesBtn.style.transform = "translateX(-50%)";
+          q3NoBtn.style.position = "absolute";
+        }
+
+        const areaRect = area.getBoundingClientRect();
+        const noW = q3NoBtn.offsetWidth;
+        const noH = q3NoBtn.offsetHeight;
+
+        let placed = false;
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const newLeft = Math.random() * (area.offsetWidth - noW - 20) + 10;
+          const newTop = Math.random() * (area.offsetHeight - noH - 20) + 10;
+
+          q3NoBtn.style.left = newLeft + "px";
+          q3NoBtn.style.top = newTop + "px";
+
+          const noRect = q3NoBtn.getBoundingClientRect();
+          const yesRect = yesBtn.getBoundingClientRect();
+
+          if (!rectsOverlap(noRect, yesRect, 16)) {
+            placed = true;
+            break;
+          }
+        }
+
+        q3NoBtn.blur();
+
+        q3YesFontSize = Math.min(q3YesFontSize + 0.2, 2.6);
+        yesBtn.style.fontSize = q3YesFontSize + "rem";
+      }
+
+      q3NoBtn.addEventListener("mouseenter", teleportNo);
+      q3NoBtn.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        teleportNo();
+      }, { passive: false });
+
+      yesBtn.addEventListener("click", handleQ3Yes);
+    }
+
+    function burstConfettiHearts() {
+      const heartColors = ["#f9c8d4", "#c8647a", "#ff6b8a", "#ffa0b4", "#e8506a"];
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+
+      for (let i = 0; i < 40; i++) {
+        const heart = document.createElement("div");
+        heart.className = "confetti-heart";
+        heart.textContent = "\u2764\ufe0f";
+        heart.style.color = heartColors[Math.floor(Math.random() * heartColors.length)];
+        heart.style.left = centerX + "px";
+        heart.style.top = centerY + "px";
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 120 + Math.random() * 300;
+        const dx = Math.cos(angle) * distance;
+        const dy = Math.sin(angle) * distance - 80;
+        const rotation = (Math.random() - 0.5) * 720;
+
+        heart.style.setProperty("--cx", dx + "px");
+        heart.style.setProperty("--cy", dy + "px");
+        heart.style.setProperty("--cr", rotation + "deg");
+        heart.style.animationDelay = (Math.random() * 0.15) + "s";
+
+        document.body.appendChild(heart);
+
+        setTimeout(() => heart.remove(), 1700);
+      }
+    }
+
+    function handleQ3Yes() {
+      if (q3NoBtn) {
+        q3NoBtn.remove();
+        q3NoBtn = null;
+      }
+
+      const yesBtn = document.getElementById("q3YesBtn");
+      if (yesBtn) yesBtn.remove();
+
+      const btnArea = document.getElementById("q3ButtonArea");
+      if (btnArea) btnArea.remove();
+
+      const gifEl = document.getElementById("q3Gif");
+      if (gifEl) gifEl.src = QUIZ_Q3_CELEBRATION_GIF;
+
+      burstConfettiHearts();
+
+      const area = document.getElementById("q3CelebrationArea");
+      if (area) {
+        area.innerHTML =
+          `<div class="q3-celebration">` +
+          `<p class="q3-celebration-title">Yayyy! \ud83c\udf89</p>` +
+          `<p class="q3-celebration-sub">I like you a lot too, baby!\ud83c\udf38</p>` +
+          `</div>`;
+      }
+
+      setTimeout(() => {
+        quizScreen.style.transition = "opacity 0.9s ease";
+        quizScreen.style.opacity = "0";
+
+        setTimeout(() => {
+          quizScreen.style.display = "none";
+          quizScreen.setAttribute("aria-hidden", "true");
+          quizScreen.classList.remove("show");
+          quizScreen.style.opacity = "";
+          quizScreen.style.transition = "";
+          showMainPage();
+
+          bgMusic.play().then(() => {
+            vinylPlayer.classList.add("playing");
+          }).catch(() => { });
+        }, 950);
+      }, 2500);
+    }
+
+
+    function createPetals(container) {
+      for (let i = 0; i < PETAL_COUNT; i += 1) {
+        const petal = document.createElement("span");
+        petal.className = "petal";
+        petal.style.left = `${Math.random() * 100}%`;
+        petal.style.background = PETAL_COLORS[i % PETAL_COLORS.length];
+        petal.style.setProperty("--drift", `${Math.random() * 80 - 40}px`);
+        petal.style.animationDuration = `${12 + Math.random() * 14}s`;
+        petal.style.animationDelay = `${Math.random() * 12}s`;
+        container.appendChild(petal);
+      }
+    }
+
+    function setupMusicPlayer() {
+      bgMusic.src = BIRTHDAY_MUSIC.src;
+
+      vinylTooltip.innerHTML =
+        `<span class="vinyl-tooltip-title">${BIRTHDAY_MUSIC.title}</span>` +
+        `<span class="vinyl-tooltip-artist">${BIRTHDAY_MUSIC.artist}</span>`;
+
+      vinylPlayer.addEventListener("click", () => {
+        if (bgMusic.paused) {
+          bgMusic.play().then(() => {
+            vinylPlayer.classList.add("playing");
+          }).catch(() => {
+            vinylPlayer.classList.remove("playing");
+          });
+        } else {
+          bgMusic.pause();
+          vinylPlayer.classList.remove("playing");
+        }
+      });
+    }
+
+    function onPasswordSuccess() {
+      document.body.classList.add("unlocked");
+      vinylPlayer.classList.add("visible");
+      showQuizScreen();
+    }
+
+    function showQuizScreen() {
+      if (!quizPetalsCreated) {
+        createPetals(document.getElementById("quizPetals"));
+        quizPetalsCreated = true;
+      }
+
+      quizIndex = 0;
+      quizAnswerLocked = false;
+      q1ShuffledOptions = shuffleArray(QUIZ_Q1.options);
+      q2ShuffledOptions = shuffleArray(QUIZ_Q2.options);
+      quizScreen.style.display = "flex";
+      quizScreen.setAttribute("aria-hidden", "false");
+
+      requestAnimationFrame(() => {
+        quizScreen.classList.add("show");
+        resetQuizContentPanel();
+        renderQuestion1();
+      });
+    }
+
+    function renderQuizStep() {
+      if (quizIndex > QUIZ_QUESTIONS.length) {
+        renderQuizComplete();
+        return;
+      }
+
+      const step = QUIZ_QUESTIONS[quizIndex - 1];
+      const questionNumber = quizIndex + 3;
+
+      quizContentPanel.innerHTML =
+        `<p class="quiz-progress">Question ${questionNumber} of ${QUIZ_TOTAL}</p>` +
+        `<h2 class="quiz-question" id="quizQuestion">${step.question}</h2>` +
+        `<div class="quiz-options" id="quizOptions"></div>`;
+
+      const optionsContainer = quizContentPanel.querySelector("#quizOptions");
+
+      step.options.forEach((optionText) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "quiz-option";
+        button.textContent = optionText;
+        button.addEventListener("click", () => {
+          if (quizAnswerLocked) return;
+          quizAnswerLocked = true;
+          quizIndex += 1;
+
+          const finishTransition = () => {
+            quizAnswerLocked = false;
+          };
+
+          if (quizIndex > QUIZ_QUESTIONS.length) {
+            transitionQuizContent(() => renderQuizComplete(), finishTransition);
+          } else {
+            transitionQuizContent(() => renderQuizStep(), finishTransition);
+          }
+        });
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    function renderQuizComplete() {
+      quizContentPanel.innerHTML =
+        `<p class="quiz-progress">Complete!</p>` +
+        `<h2 class="quiz-question" id="quizQuestion">You passed the love test ✨</h2>` +
+        `<p class="quiz-complete-msg">Your surprise is waiting…</p>` +
+        `<div class="quiz-options" id="quizOptions"></div>`;
+
+      const finishBtn = document.createElement("button");
+      finishBtn.type = "button";
+      finishBtn.className = "quiz-option";
+      finishBtn.textContent = "Open your birthday page →";
+      finishBtn.addEventListener("click", completeQuiz);
+      quizContentPanel.querySelector("#quizOptions").appendChild(finishBtn);
+    }
+
+    function completeQuiz() {
+      quizScreen.classList.remove("show");
+
+      setTimeout(() => {
+        quizScreen.style.display = "none";
+        quizScreen.setAttribute("aria-hidden", "true");
+        showMainPage();
+      }, 900);
+    }
+
+    function showMainPage() {
+      mainPage.style.display = "flex";
+      mainPage.setAttribute("aria-hidden", "false");
+
+      requestAnimationFrame(() => {
+        mainPage.classList.add("show");
+        requestAnimationFrame(() => {
+          mainPage.classList.add("revealed");
+          showEnvelope();
+        });
+      });
+    }
+
+    function showEnvelope() {
+      setTimeout(() => {
+        envelopeSvg.classList.add("visible");
+      }, 2350);
+    }
+
+    function resetLetterText() {
+      if (typewriterTimer !== null) {
+        clearInterval(typewriterTimer);
+        typewriterTimer = null;
+      }
+      letterBody.textContent = "";
+      letterSignoff.classList.remove("visible");
+    }
+
+    function runTypewriter(skipAnimation) {
+      resetLetterText();
+
+      if (skipAnimation) {
+        letterBody.textContent = LETTER_BODY;
+        letterSignoff.classList.add("visible");
+        return;
+      }
+
+      let index = 0;
+      typewriterTimer = setInterval(() => {
+        letterBody.textContent += LETTER_BODY[index];
+        index += 1;
+        if (index >= LETTER_BODY.length) {
+          clearInterval(typewriterTimer);
+          typewriterTimer = null;
+          setTimeout(() => letterSignoff.classList.add("visible"), 280);
+        }
+      }, TYPEWRITER_MS);
+    }
+
+    function openLetter() {
+      if (letterIsOpen) return;
+      letterIsOpen = true;
+
+      const skipAnimation = letterReadOnce;
+
+      if (skipAnimation) {
+        envelopeSvg.classList.add("instant");
+      }
+
+      envelopeSvg.classList.add("is-open");
+
+      if (skipAnimation) {
+        letterOverlay.classList.add("active", "instant");
+        letterCard.classList.add("instant");
+        letterOverlay.setAttribute("aria-hidden", "false");
+        requestAnimationFrame(() => {
+          letterCard.classList.add("expanded");
+        });
+        runTypewriter(true);
+      } else {
+        setTimeout(() => {
+          letterOverlay.classList.add("active");
+          letterOverlay.classList.remove("instant");
+          letterCard.classList.remove("instant");
+          letterOverlay.setAttribute("aria-hidden", "false");
+          requestAnimationFrame(() => {
+            letterCard.classList.add("expanded");
+          });
+          setTimeout(() => {
+            runTypewriter(false);
+          }, 680);
+        }, 700);
+      }
+    }
+
+    function closeLetter() {
+      if (!letterIsOpen) return;
+
+      letterCard.classList.remove("expanded");
+      letterCard.classList.remove("instant");
+      letterOverlay.classList.remove("instant");
+      resetLetterText();
+
+      setTimeout(() => {
+        letterOverlay.classList.remove("active");
+        letterOverlay.setAttribute("aria-hidden", "true");
+        envelopeSvg.classList.remove("is-open");
+        envelopeSvg.classList.remove("instant");
+        letterIsOpen = false;
+
+        if (!letterReadOnce) {
+          letterReadOnce = true;
+          continueBtn.hidden = false;
+          requestAnimationFrame(() => continueBtn.classList.add("show"));
+        }
+      }, 560);
+    }
+
+    function setupLetterInteraction() {
+      envelopeSvg.addEventListener("click", openLetter);
+      envelopeSvg.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openLetter();
+        }
+      });
+
+      letterOverlay.addEventListener("click", (event) => {
+        if (event.target === letterOverlay) {
+          closeLetter();
+        }
+      });
+
+      letterCard.addEventListener("click", (event) => {
+        event.stopPropagation();
+      });
+    }
+
+    function renderDisplay() {
+      const chars = [];
+      for (let i = 0; i < MAX_LENGTH; i += 1) {
+        chars.push(pin[i] ?? "_");
+      }
+      pinDisplay.textContent = chars.join(" ");
+    }
+
+    function showFeedback(text, type) {
+      feedback.textContent = text;
+      feedback.className = "feedback show";
+      if (type === "success") {
+        feedback.classList.add("success");
+      }
+    }
+
+    function clearFeedback() {
+      feedback.className = "feedback";
+      feedback.textContent = "";
+    }
+
+    function triggerShake() {
+      pinPanel.classList.remove("shake");
+      void pinPanel.offsetWidth;
+      pinPanel.classList.add("shake");
+      setTimeout(() => pinPanel.classList.remove("shake"), 460);
+    }
+
+    function unlockFlow() {
+      unlocked = true;
+      showFeedback("Correct! ✨", "success");
+
+      bgMusic.play().then(() => {
+        vinylPlayer.classList.add("playing");
+      }).catch(() => { });
+
+      setTimeout(() => {
+        lockScreen.classList.add("fade-out");
+        onPasswordSuccess();
+        setTimeout(() => {
+          lockScreen.style.display = "none";
+        }, 850);
+      }, 1500);
+    }
+
+    function tryConfirm() {
+      if (unlocked) return;
+      if (pin.length !== MAX_LENGTH) {
+        showFeedback("Please enter 4 digits");
+        triggerShake();
+        return;
+      }
+      if (pin === CORRECT_PIN) {
+        unlockFlow();
+      } else {
+        showFeedback("Wrong key, try again");
+        triggerShake();
+        pin = "";
+        renderDisplay();
+      }
+    }
+
+    function handleDigit(value) {
+      if (unlocked || pin.length >= MAX_LENGTH) return;
+      pin += value;
+      renderDisplay();
+      clearFeedback();
+    }
+
+    function handleBackspace() {
+      if (unlocked || !pin.length) return;
+      pin = pin.slice(0, -1);
+      renderDisplay();
+      clearFeedback();
+    }
+
+    keys.forEach((button) => {
+      button.addEventListener("click", () => {
+        const digit = button.dataset.key;
+        const action = button.dataset.action;
+        if (digit !== undefined) handleDigit(digit);
+        if (action === "backspace") handleBackspace();
+        if (action === "confirm") tryConfirm();
+      });
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (unlocked) return;
+      if (/^\d$/.test(event.key)) {
+        handleDigit(event.key);
+      } else if (event.key === "Backspace") {
+        event.preventDefault();
+        handleBackspace();
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        tryConfirm();
+      }
+    });
+
+    let outroPetalsCreated = false;
+
+    continueBtn.addEventListener("click", () => {
+      birthdayContent.classList.add("fade-out");
+      mainPetals.style.transition = "opacity 0.8s ease";
+      mainPetals.style.opacity = "0";
+
+      setTimeout(() => {
+        birthdayContent.style.visibility = "hidden";
+        mainPetals.style.visibility = "hidden";
+
+        if (!outroPetalsCreated) {
+          createPetals(outroPetals);
+          outroPetalsCreated = true;
+        }
+
+        outroContent.style.display = "flex";
+        requestAnimationFrame(() => {
+          outroContent.classList.add("show");
+        });
+      }, 850);
+    });
+
+    goBackBtn.addEventListener("click", () => {
+      outroContent.classList.remove("show");
+
+      setTimeout(() => {
+        outroContent.style.display = "none";
+
+        envelopeSvg.classList.remove("is-open");
+        envelopeSvg.classList.remove("instant");
+
+        birthdayContent.style.visibility = "visible";
+        mainPetals.style.visibility = "visible";
+        mainPetals.style.opacity = "1";
+        birthdayContent.classList.remove("fade-out");
+      }, 850);
+    });
+
+    createPetals(document.getElementById("lockPetals"));
+    createPetals(document.getElementById("mainPetals"));
+    setupMusicPlayer();
+    setupLetterInteraction();
+    renderDisplay();
+  </script>
+</body>
+
+</html>
