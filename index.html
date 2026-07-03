@@ -395,18 +395,18 @@
       color: var(--text-dark);
     }
 
-    .letter-signoff {
-      margin: 2rem 0 0;
-      font-family: "Lora", serif;
-      font-style: italic;
-      font-size: clamp(1rem, 2.2vw, 1.12rem);
-      color: var(--text-dark);
+    .letter-word {
       opacity: 0;
-      transition: opacity 0.85s ease;
+      filter: blur(4px);
+      transform: translateY(4px);
+      transition: opacity 0.9s ease, filter 0.7s ease, transform 0.6s ease;
+      display: inline;
     }
 
-    .letter-signoff.visible {
+    .letter-word.visible {
       opacity: 1;
+      filter: blur(0);
+      transform: translateY(0);
     }
 
     @keyframes envelope-glow {
@@ -1139,7 +1139,7 @@
         <p class="letter-date">July 11, 2026</p>
         <p class="letter-salutation">My dearest Nitya,</p>
         <p class="letter-body" id="letterBody"></p>
-        <p class="letter-signoff" id="letterSignoff">Forever yours, Woesel 🌸</p>
+
       </article>
     </div>
 
@@ -1152,14 +1152,7 @@
 
   <button id="vinylPlayer" class="vinyl-player" type="button" aria-label="Toggle birthday music">
     <span class="vinyl-tooltip" id="vinylTooltip"></span>
-    <svg class="vinyl-icon" viewBox="0 0 40 40" aria-hidden="true">
-      <circle cx="20" cy="20" r="19" fill="#2a2226" stroke="#1a1418" stroke-width="1" />
-      <circle cx="20" cy="20" r="15" fill="none" stroke="#4a3a42" stroke-width="0.7" />
-      <circle cx="20" cy="20" r="11" fill="none" stroke="#5a4650" stroke-width="0.6" />
-      <circle cx="20" cy="20" r="7" fill="none" stroke="#6a5660" stroke-width="0.5" />
-      <circle cx="20" cy="20" r="3.5" fill="#c8647a" />
-      <circle cx="20" cy="20" r="1.2" fill="#fde8ee" />
-    </svg>
+    <img class="vinyl-icon" src="vinyl.png" alt="" aria-hidden="true">
   </button>
 
   <audio id="bgMusic" loop preload="metadata"></audio>
@@ -1169,14 +1162,13 @@
     const MAX_LENGTH = 4;
     const BIRTHDAY_MUSIC = {
       src: "audio/Describe what she was like.mp3",
-      title: "A Song for You",
-      artist: "For Nitya"
+      title: "A Song for You"
     };
 
     const PETAL_COLORS = ["#f9c8d4", "#f5b8c8", "#e8a0b0", "#ffdce8", "#f7c4d4"];
-    const PETAL_COUNT = 40;
-    const LETTER_BODY = "I really like you, my baby.";
-    const TYPEWRITER_MS = 55;
+    const PETAL_COUNT = 100;
+    const LETTER_BODY = "It's me, your boyfriend, who has already surpassed 21, while you reach that point now. I wonder how you feel about that. Honestly, after 20, it's all the same. But I am not celebrating you turning 21, rather the day itself. Today's the day you were born. Today's the day you completed another revolution around the sun. 21 revolutions, that's the amazing part. Today is the day you arrived in this world, and nothing makes me happier than that simple, beautiful truth.<br><br>I like you a lot, Nitya.<br><br>Happy Birthday.<br><br>I hope this year treats you well and brings you immense happiness. I will be a part of it after all. Hehe.<br><br>And yes, since you keep saying it, we are now only one number apart, 21 and 22. If that makes you happy, then I am happy too.<br><br>I am glad I get to be a part of this special day of yours. Though my heart aches a little that we are not together physically right now, we will be in the coming days and I can't wait for that.<br><br>Once again, best wishes from yours truly,<br>Woesel";
+    const TYPEWRITER_MS = 150;
     const QUIZ_Q1 = {
       gif: "https://media.tenor.com/ieGsbU8n9J4AAAAj/peach-goma-peach-and-goma.gif",
       question: "When did we become us? 🌸",
@@ -1215,7 +1207,7 @@
     const letterOverlay = document.getElementById("letterOverlay");
     const letterCard = document.getElementById("letterCard");
     const letterBody = document.getElementById("letterBody");
-    const letterSignoff = document.getElementById("letterSignoff");
+
     const outroContent = document.getElementById("outroContent");
     const goBackBtn = document.getElementById("goBackBtn");
     const birthdayContent = document.querySelector(".birthday-content");
@@ -1365,8 +1357,8 @@
         `<img class="quiz-gif" id="q3Gif" src="${currentQ3Gif}" alt="Peach and Goma" width="120" style="border-radius:12px">` +
         `<h2 class="quiz-question" id="quizQuestion" style="font-size:1.8rem">Do you like me? \ud83e\udd7a</h2>` +
         `<div id="q3ButtonArea">` +
-          `<button type="button" class="q3-yes-btn" id="q3YesBtn">YES</button>` +
-          `<button type="button" class="q3-no-btn" id="q3NoBtn">NO</button>` +
+        `<button type="button" class="q3-yes-btn" id="q3YesBtn">YES</button>` +
+        `<button type="button" class="q3-no-btn" id="q3NoBtn">NO</button>` +
         `</div>` +
         `<div id="q3CelebrationArea"></div>`;
 
@@ -1523,8 +1515,7 @@
       bgMusic.src = BIRTHDAY_MUSIC.src;
 
       vinylTooltip.innerHTML =
-        `<span class="vinyl-tooltip-title">${BIRTHDAY_MUSIC.title}</span>` +
-        `<span class="vinyl-tooltip-artist">${BIRTHDAY_MUSIC.artist}</span>`;
+        `<span class="vinyl-tooltip-title">${BIRTHDAY_MUSIC.title}</span>`;
 
       vinylPlayer.addEventListener("click", () => {
         if (bgMusic.paused) {
@@ -1652,32 +1643,65 @@
 
     function resetLetterText() {
       if (typewriterTimer !== null) {
-        clearInterval(typewriterTimer);
+        clearTimeout(typewriterTimer);
         typewriterTimer = null;
       }
-      letterBody.textContent = "";
-      letterSignoff.classList.remove("visible");
+      letterBody.innerHTML = "";
+    }
+
+    function buildWordSpans(html) {
+      // Split on <br> tags first, then split each segment into words
+      const segments = html.split(/<br\s*\/?>/gi);
+      const spans = [];
+      segments.forEach((seg, si) => {
+        const words = seg.trim().split(/\s+/).filter(Boolean);
+        words.forEach(w => {
+          spans.push(`<span class="letter-word">${w}</span>`);
+        });
+        if (si < segments.length - 1) {
+          spans.push("<br>");
+        }
+      });
+      return spans;
     }
 
     function runTypewriter(skipAnimation) {
       resetLetterText();
 
+      const spans = buildWordSpans(LETTER_BODY);
+      // Insert all spans at once (hidden), so layout is ready
+      letterBody.innerHTML = spans.join(" ");
+
+      const wordEls = letterBody.querySelectorAll(".letter-word");
+
       if (skipAnimation) {
-        letterBody.textContent = LETTER_BODY;
-        letterSignoff.classList.add("visible");
+        wordEls.forEach(el => el.classList.add("visible"));
         return;
       }
 
-      let index = 0;
-      typewriterTimer = setInterval(() => {
-        letterBody.textContent += LETTER_BODY[index];
-        index += 1;
-        if (index >= LETTER_BODY.length) {
-          clearInterval(typewriterTimer);
+      let i = 0;
+      function revealNext() {
+        if (i >= wordEls.length) {
           typewriterTimer = null;
-          setTimeout(() => letterSignoff.classList.add("visible"), 280);
+          return;
         }
-      }, TYPEWRITER_MS);
+        const word = wordEls[i];
+        word.classList.add("visible");
+
+        // Auto-scroll only when the revealed word drops below the visible area
+        const wordBottom = word.offsetTop + word.offsetHeight;
+        const visibleBottom = letterCard.scrollTop + letterCard.clientHeight;
+        if (wordBottom > visibleBottom - 24) {
+          letterCard.scrollTo({ top: wordBottom - letterCard.clientHeight + 40, behavior: "smooth" });
+        }
+
+        i++;
+        // Vary the timing slightly for a natural feel
+        const base = TYPEWRITER_MS;
+        const jitter = Math.random() * base * 0.6 - base * 0.3;
+        typewriterTimer = setTimeout(revealNext, base + jitter);
+      }
+      revealNext();
     }
 
     function openLetter() {
