@@ -687,10 +687,48 @@
       .lock-screen {
         grid-template-columns: 1fr;
         grid-template-rows: auto 1fr;
+        overflow-y: auto;
       }
 
       .left-pane {
-        min-height: 38vh;
+        min-height: 25vh;
+        padding: clamp(0.75rem, 2vw, 1.5rem);
+      }
+
+      .cat-gif {
+        width: min(55%, 200px);
+      }
+
+      .right-pane {
+        padding: clamp(0.75rem, 2vw, 1.5rem);
+      }
+
+      .panel {
+        padding: 0.8rem 1rem 1rem;
+      }
+
+      .title {
+        font-size: clamp(1.5rem, 3.5vw, 2rem);
+        margin: 0.1rem 0 0.6rem;
+      }
+
+      .pin-display {
+        padding: 0.5rem 0.8rem;
+        margin-bottom: 0.65rem;
+        min-height: 2.8rem;
+      }
+
+      .numpad {
+        gap: 0.55rem;
+      }
+
+      .key {
+        padding: 0.75rem 0.45rem;
+        font-size: 1.1rem;
+      }
+
+      .feedback {
+        margin-top: 0.5rem;
       }
 
       body.unlocked {
